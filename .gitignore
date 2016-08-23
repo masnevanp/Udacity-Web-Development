@@ -1,0 +1,3 @@
+*.pyc
+*.bak
+/do_deploy.bat
