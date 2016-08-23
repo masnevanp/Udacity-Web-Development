@@ -1,2 +1,1 @@
-# Udacity-Web-Development
-# Projects from Udacity's Web Development course
+# Projects from [Udacity's Web Development course](https://www.udacity.com/course/web-development--cs253)
