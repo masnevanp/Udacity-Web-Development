@@ -21,6 +21,7 @@ import unit2.rot13.main
 import unit2.signup.main
 import unit2a.main
 import unit3.asciichan.main
+import unit3.blog.main
 
 app = webapp2.WSGIApplication([
             ('/unit1', unit1.main.MainHandler),
@@ -29,6 +30,9 @@ app = webapp2.WSGIApplication([
             ("/unit2/welcome", unit2.signup.main.Welcome),
             ("/unit2a", unit2a.main.MainPage),
             ("/unit2a/fizzbuzz", unit2a.main.FizzBuzzHandler),
-            ("/unit3/asciichan", unit3.asciichan.main.MainPage)
+            ("/unit3/asciichan", unit3.asciichan.main.MainPage),
+            ('/unit3/blog', unit3.blog.main.FrontPage),
+            ('/unit3/blog/newpost', unit3.blog.main.NewPost),
+            (r'/unit3/blog/(\d+)', unit3.blog.main.PermaLink)
         ],
         debug=True)
