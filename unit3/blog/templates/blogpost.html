@@ -7,7 +7,7 @@
   </div>
   
   <div class="w3-container">
-    <p>{{blogpost.content | safe}}</p>
+    <p>{{blogpost.content.replace('\n', "<br>") | safe}}</p>
     <div class="w3-row" style="font-family: consolas; color: lightgray">
       <br>
       key: {{blogpost.key()}}<br>
