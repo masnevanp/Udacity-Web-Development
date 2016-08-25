@@ -18,6 +18,10 @@ class BlogPost(db.Model):
     content = db.TextProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
 
+    def render(self):
+        t = jinja_env.get_template('blogpost.html')
+        return t.render(blogpost=self)
+
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
