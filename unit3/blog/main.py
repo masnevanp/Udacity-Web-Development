@@ -33,7 +33,8 @@ class Handler(webapp2.RequestHandler):
 
 class FrontPage(Handler):
     def get(self):
-        blogposts = db.GqlQuery("SELECT * FROM BlogPost ORDER BY created DESC")
+        blogposts = db.GqlQuery(
+            "SELECT * FROM BlogPost ORDER BY created DESC LIMIT 10")
         self.render("front.html", blogposts=blogposts)
 
 
