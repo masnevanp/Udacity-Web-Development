@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="w3-card-8 w3-margin w3-white w3-padding-large">
+    <div class="w3-container w3-padding-8">
+        <h3><b>Signup</b></h3>
+    </div>
+
+    <div class="w3-container">
+        <form method="post">
+            <label>Username</label>
+            <label style="color: red">{{username_err}}</label>
+            <input class="w3-input w3-border" type="text" style="max-width: 300px;"
+                    name="username" value="{{username}}">
+            
+            <label>Password</label>
+            <label style="color: red">{{password_err}}</label>
+            <input class="w3-input w3-border" type="password" style="max-width: 300px;"
+                    name="password" value="">
+                        
+            <label>Verify Password</label>
+            <label style="color: red">{{verify_err}}</label>
+            <input class="w3-input w3-border" type="password" style="max-width: 300px;"
+                    name="verify" value="">
+                        
+            <label>Email (optional)</label>
+            <label style="color: red">{{email_err}}</label>
+            <input class="w3-input w3-border" type="text" style="max-width: 300px;"
+                    name="email" value="{{email}}">
+                        
+            <br>
+            <input type="submit">
+        </form>
+    </div>
+</div>
+<hr>
+{% endblock %}  

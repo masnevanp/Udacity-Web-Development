@@ -4,8 +4,12 @@ import os
 
 import webapp2
 import jinja2
-
 from google.appengine.ext import db
+
+from collections import defaultdict
+
+import utils
+
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(
@@ -68,3 +72,55 @@ class PermaLink(Handler):
             self.render("perma.html", blogpost=blogpost)
         else:
             self.render("perma_404.html")
+
+
+class SignUp(Handler):
+    def render_form(self, params=defaultdict(str)):
+        self.render("signup.html", **params)
+
+    def get(self):
+        self.render_form()
+
+    def post(self):
+        username = self.request.get('username')
+        password = self.request.get('password')
+        verify = self.request.get('verify')
+        email = self.request.get('email')
+
+        params = defaultdict(str)
+        params['username'] = username
+        params['email'] = email
+
+        valid = True
+
+        if not utils.valid_username(username):
+            params['username_err'] = "That's not a valid username."
+            valid = False
+
+        if not utils.valid_password(password):
+            params['password_err'] = "That wasn't a valid password."
+            valid = False
+        elif password != verify:
+            params['verify_err'] = "Your passwords didn't match."
+            valid = False
+
+        if email and not utils.valid_email(email):
+            params['email_err'] = "That's not a valid email."
+            valid = False
+
+        if valid:
+            self.redirect("/unit3/blog/welcome")
+        else:
+            self.render_form(params)
+
+
+class Welcome(Handler):
+    def get(self):
+        welcome = """
+            <div style="color: blue"><b>Welcome, %s!</b></div>
+        """
+        user = "you" # self.request.get('username')
+        if utils.valid_username(user):
+            self.write(welcome % user)
+        else:
+            self.redirect("/unit3/blog/signup")
