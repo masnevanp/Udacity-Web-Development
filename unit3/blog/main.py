@@ -17,6 +17,27 @@ jinja_env = jinja2.Environment(
                 autoescape=True)
 
 
+class User(db.Model):
+    name = db.StringProperty(required=True)
+    hash = db.StringProperty(required=True)
+    salt = db.StringProperty(required=True)
+    email = db.StringProperty(required=False)
+
+    @staticmethod
+    def get_user(username):
+        return db.GqlQuery(
+                "SELECT * FROM User WHERE name='%s'" % username)
+    
+    @staticmethod
+    def add_user(name, hash, salt, email=""):
+        # TODO(?): catch & handle the TransactionFailed
+        User(name=name, hash=hash, salt=salt, email=email).put()
+    
+    @staticmethod
+    def user_exists(username):
+        return (User.get_user(username)).count() > 0
+
+
 class BlogPost(db.Model):
     subject = db.StringProperty(required=True)
     content = db.TextProperty(required=True)
@@ -92,9 +113,13 @@ class SignUp(Handler):
         params['email'] = email
 
         valid = True
-
+        
         if not utils.valid_username(username):
             params['username_err'] = "That's not a valid username."
+            valid = False
+        
+        if User.user_exists(username):
+            params['username_err'] = "User already exists."
             valid = False
 
         if not utils.valid_password(password):
@@ -109,6 +134,7 @@ class SignUp(Handler):
             valid = False
 
         if valid:
+            User.add_user(name=username, hash="h", salt="s", email=email)
             user_cookie = 'user=%s; Path=/' % utils.make_secure_val(username)
             self.response.headers.add_header('Set-Cookie', str(user_cookie))
             self.redirect("/unit3/blog/welcome")
