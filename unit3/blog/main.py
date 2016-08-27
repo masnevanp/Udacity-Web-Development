@@ -109,6 +109,8 @@ class SignUp(Handler):
             valid = False
 
         if valid:
+            user_cookie = 'user=%s; Path=/' % utils.make_secure_val(username)
+            self.response.headers.add_header('Set-Cookie', str(user_cookie))
             self.redirect("/unit3/blog/welcome")
         else:
             self.render_form(params)
@@ -116,11 +118,12 @@ class SignUp(Handler):
 
 class Welcome(Handler):
     def get(self):
-        welcome = """
-            <div style="color: blue"><b>Welcome, %s!</b></div>
-        """
-        user = "you" # self.request.get('username')
-        if utils.valid_username(user):
-            self.write(welcome % user)
+        user = None
+        user_cookie = self.request.cookies.get('user')
+        if user_cookie:
+            user = utils.check_secure_val(user_cookie)
+        
+        if user:
+            self.write("Welcome, %s!" % user)
         else:
             self.redirect("/unit3/blog/signup")
