@@ -20,7 +20,6 @@ jinja_env = jinja2.Environment(
 class User(db.Model):
     name = db.StringProperty(required=True)
     hash = db.StringProperty(required=True)
-    salt = db.StringProperty(required=True)
     email = db.StringProperty(required=False)
 
     @staticmethod
@@ -29,9 +28,9 @@ class User(db.Model):
                 "SELECT * FROM User WHERE name='%s'" % username)
     
     @staticmethod
-    def add_user(name, hash, salt, email=""):
+    def add_user(name, hash, email=""):
         # TODO(?): catch & handle the TransactionFailed
-        User(name=name, hash=hash, salt=salt, email=email).put()
+        User(name=name, hash=hash, email=email).put()
     
     @staticmethod
     def user_exists(username):
@@ -134,7 +133,8 @@ class SignUp(Handler):
             valid = False
 
         if valid:
-            User.add_user(name=username, hash="h", salt="s", email=email)
+            hash = utils.make_pw_hash(username, password)
+            User.add_user(username, hash, email)
             user_cookie = 'user=%s; Path=/' % utils.make_secure_val(username)
             self.response.headers.add_header('Set-Cookie', str(user_cookie))
             self.redirect("/unit3/blog/welcome")
