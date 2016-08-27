@@ -170,6 +170,12 @@ class Login(Handler):
             self.render_form(login_err="Invalid login.")
 
 
+class Logout(Handler):
+    def get(self):
+        self.response.headers.add_header('Set-Cookie', 'user=; Path=/')
+        self.redirect("/unit3/blog/signup")
+
+
 class Welcome(Handler):
     def get(self):
         user = None

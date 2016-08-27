@@ -22,6 +22,7 @@ app = webapp2.WSGIApplication([
             (r'/unit3/blog/([0-9]+)', unit3.blog.main.PermaLink),
             ('/unit3/blog/signup', unit3.blog.main.SignUp),
             ('/unit3/blog/login', unit3.blog.main.Login),
+            ('/unit3/blog/logout', unit3.blog.main.Logout),
             ('/unit3/blog/welcome', unit3.blog.main.Welcome)
         ],
         debug=True)
