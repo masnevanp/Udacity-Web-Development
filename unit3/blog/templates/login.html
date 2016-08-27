@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="w3-card-8 w3-margin w3-white w3-padding-large">
+    <div class="w3-container w3-padding-8">
+        <h3><b>Login</b></h3>
+    </div>
+
+    <div class="w3-container">
+        <form method="post">
+            <label>Username</label>
+            <input class="w3-input w3-border" type="text" style="max-width: 300px;"
+                    name="username" value="{{username}}">
+            
+            <label>Password</label>
+            <input class="w3-input w3-border" type="password" style="max-width: 300px;"
+                    name="password" value="">
+                        
+            <br>
+            <input type="submit">
+            <label style="color: red">{{login_err}}</label>
+        </form>
+    </div>
+</div>
+<hr>
+{% endblock %}  

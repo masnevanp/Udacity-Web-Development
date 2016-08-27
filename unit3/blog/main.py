@@ -24,8 +24,10 @@ class User(db.Model):
 
     @staticmethod
     def get_user(username):
-        return db.GqlQuery(
+        user = db.GqlQuery(
                 "SELECT * FROM User WHERE name='%s'" % username)
+        if user.count() == 1:
+            return user[0]
     
     @staticmethod
     def add_user(name, hash, email=""):
@@ -34,7 +36,7 @@ class User(db.Model):
     
     @staticmethod
     def user_exists(username):
-        return (User.get_user(username)).count() > 0
+        return User.get_user(username) != None
 
 
 class BlogPost(db.Model):
@@ -142,6 +144,32 @@ class SignUp(Handler):
             self.render_form(params)
 
 
+class Login(Handler):
+    def render_form(self, login_err=""):
+        self.render("login.html", login_err=login_err)
+
+    def get(self):
+        self.render_form()
+
+    def post(self):
+        username = self.request.get('username')
+        password = self.request.get('password')
+
+        user_cookie = None
+
+        if username and password:
+            user = User.get_user(username)
+            if user:
+                if utils.valid_pw(username, password, user.hash):
+                    user_cookie = 'user=%s; Path=/' % utils.make_secure_val(username)
+
+        if user_cookie:
+            self.response.headers.add_header('Set-Cookie', str(user_cookie))
+            self.redirect("/unit3/blog/welcome")
+        else:
+            self.render_form(login_err="Invalid login.")
+
+
 class Welcome(Handler):
     def get(self):
         user = None
@@ -153,3 +181,4 @@ class Welcome(Handler):
             self.write("Welcome, %s!" % user)
         else:
             self.redirect("/unit3/blog/signup")
+    
