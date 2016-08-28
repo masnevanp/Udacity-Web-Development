@@ -22,17 +22,9 @@ class User(db.Model):
     hash = db.StringProperty(required=True)
     email = db.StringProperty(required=False)
     
-    #def initialize(self, *a, **kw):
-    #    webapp2.RequestHandler.initialize(self, *a, **kw)
-    #    uid = self.read_secure_cookie('username')
-    #    self.user = uid and User.by_id(int(uid))
-    
     @staticmethod
     def get_user(username):
-        user = db.GqlQuery(
-                "SELECT * FROM User WHERE name='%s'" % username)
-        if user.count() == 1:
-            return user[0]
+        return User.all().filter('name =', username).get()
     
     @staticmethod
     def add_user(name, hash, email=""):
@@ -64,16 +56,30 @@ class Handler(webapp2.RequestHandler):
 
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
+
+    def initialize(self, *a, **kw):
+        webapp2.RequestHandler.initialize(self, *a, **kw)
+        self.cur_user = self.get_cookie('username')
+        #username = self.read_secure_cookie('user')
+        #self.user = uid and User.by_id(int(uid))
     
+    def set_cookie(self, name, val):
+        cookie = str('%s=%s; Path=/' % (name, utils.make_secure_val(val)))
+        self.response.headers.add_header('Set-Cookie', cookie)
+    
+    def get_cookie(self, name):
+        cookie = self.request.cookies.get(name)
+        if cookie:
+            return utils.check_secure_val(cookie)
+         
     def login(self, username):
-        user_cookie = 'user=%s; Path=/' % utils.make_secure_val(username)
-        self.response.headers.add_header('Set-Cookie', str(user_cookie))
-        self.redirect("/unit3/blog/welcome")
+        self.set_cookie('username', username)
+        self.redirect('/unit3/blog/welcome')
 
     def logout(self):
-        self.response.headers.add_header('Set-Cookie', 'user=; Path=/')
-        self.redirect("/unit3/blog/signup")
-
+        self.set_cookie('username', '')
+        self.redirect('/unit3/blog/signup')
+    
 
 class FrontPage(Handler):
     def get(self):
@@ -156,6 +162,7 @@ class SignUp(Handler):
             self.render_form(params)
 
 
+# TODO: User already logged in
 class Login(Handler):
     def render_form(self, login_err=""):
         self.render("login.html", login_err=login_err)
@@ -184,13 +191,8 @@ class Logout(Handler):
 
 class Welcome(Handler):
     def get(self):
-        user = None
-        user_cookie = self.request.cookies.get('user')
-        if user_cookie:
-            user = utils.check_secure_val(user_cookie)
-        
-        if user:
-            self.render("welcome.html", username=user)
+        if self.cur_user:
+            self.render("welcome.html", username=self.cur_user)
         else:
             self.redirect("/unit3/blog/signup")
     
