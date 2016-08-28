@@ -21,19 +21,15 @@ def valid_email(email):
     return EMAIL_RE.match(email)
 
 
+SECRET = 'Setec Astronomy - Too Many Secters'
 def make_secure_val(s):
-    return "%s|%s" % (s, hash_str(s))
+    return "%s|%s" % (s, hmac.new(SECRET, s).hexdigest())
 
 
 def check_secure_val(h):
     val = h.split('|')[0]
     if h == make_secure_val(val):
         return val
-
-
-SECRET = 'Setec Astronomy'
-def hash_str(s):
-    return hmac.new(SECRET, s).hexdigest()
 
 
 def make_pw_hash(name, pw, salt=None):
@@ -48,5 +44,5 @@ def valid_pw(name, pw, h):
     return make_pw_hash(name, pw, salt) == h
 
 
-def make_salt():
-    return "".join([random.choice(string.ascii_letters) for i in range(8)])
+def make_salt(length=8):
+    return "".join([random.choice(string.ascii_letters) for i in range(length)])
