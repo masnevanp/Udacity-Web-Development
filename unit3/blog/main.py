@@ -7,6 +7,8 @@ import jinja2
 from google.appengine.ext import db
 
 from collections import defaultdict
+from collections import OrderedDict
+import json
 
 import utils
 
@@ -45,6 +47,15 @@ class BlogPost(db.Model):
         t = jinja_env.get_template('blogpost.html')
         return t.render(blogpost=self)
     
+    def to_json(self):
+        blogpost = OrderedDict([
+            ("subject", self.subject),
+            ("content", self.content),
+            ("created", self.created.strftime("%a %b %d %X %Y"))
+        ])
+
+        return json.dumps(blogpost)
+    
     @staticmethod
     def store_post(subject, content):
         return BlogPost(subject=subject, content=content).put().id()
@@ -57,6 +68,11 @@ class BlogPost(db.Model):
     def get_latest(limit=10):
         return db.GqlQuery(
             "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % limit)
+
+    @staticmethod
+    def get_latest_json(limit=10):
+        blogposts = BlogPost.get_latest(limit)
+        return '[' + ",".join([bp.to_json() for bp in blogposts]) + ']'
 
 
 class Handler(webapp2.RequestHandler):
@@ -103,7 +119,7 @@ class FrontPage(Handler):
 class FrontPageJson(Handler):
     def get(self):
         self.response.headers['content-type'] = "application/json; charset=UTF-8"
-        self.write('{"json": "coming soon..."}')
+        self.write(BlogPost.get_latest_json())
 
 
 class NewPost(Handler):
@@ -133,10 +149,16 @@ class PermaLink(Handler):
         else:
             self.render("perma_404.html")
 
+
 class PermaLinkJson(Handler):
-    def get(self, link_id):
-        self.response.headers['content-type'] = "application/json; charset=UTF-8"
-        self.write('{"json": "for %s coming soon..."}' % link_id)
+    def get(self, id):
+        blogpost = BlogPost.get_post(id)
+        if blogpost:
+            self.response.headers['content-type'] = "application/json; charset=UTF-8"
+            self.write(blogpost.to_json())
+        else:
+            self.response.set_status(404)
+            self.write(json.dumps({"error": "unknown id"}))
 
 
 class SignUp(Handler):
