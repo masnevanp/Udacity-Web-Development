@@ -17,7 +17,7 @@ app = webapp2.WSGIApplication([
             ("/unit2a/fizzbuzz", unit2a.main.FizzBuzzHandler),
             ("/unit3/asciichan", unit3.asciichan.main.MainPage),
             ('/unit3/blog/?', unit3.blog.main.FrontPage),
-            ('/unit3/blog/\.json', unit3.blog.main.FrontPageJson),
+            ('/unit3/blog/?\.json', unit3.blog.main.FrontPageJson),
             ('/unit3/blog/newpost', unit3.blog.main.NewPost),
             (r'/unit3/blog/([0-9]+)', unit3.blog.main.PermaLink),
             (r'/unit3/blog/([0-9]+)\.json', unit3.blog.main.PermaLinkJson),
