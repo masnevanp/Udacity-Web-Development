@@ -25,17 +25,19 @@ class User(db.Model):
     email = db.StringProperty(required=False)
     
     @staticmethod
-    def get_user(username):
-        return User.all().filter('name =', username).get()
-    
-    @staticmethod
     def add_user(name, hash, email=""):
         # TODO(?): catch & handle the TransactionFailed
         User(name=name, hash=hash, email=email).put()
     
     @staticmethod
     def user_exists(username):
-        return User.get_user(username) != None
+        return User.all().filter('name =', username).get() != None
+    
+    @staticmethod
+    def valid_user(username, password):
+        if username and password:
+            user = User.all().filter('name =', username).get()
+            return utils.valid_pw(username, password, user.hash)
 
 
 class BlogPost(db.Model):
@@ -203,7 +205,7 @@ class SignUp(Handler):
             self.render_form(params)
 
 
-# TODO: User already logged in
+# TODO: User already logged in (redirect to 'welcome'?)
 class Login(Handler):
     def render_form(self, login_err=""):
         self.render("login.html", login_err=login_err)
@@ -215,14 +217,10 @@ class Login(Handler):
         username = self.request.get('username')
         password = self.request.get('password')
 
-        if username and password:
-            user = User.get_user(username)
-            if user:
-                if utils.valid_pw(username, password, user.hash):
-                    self.login(username)
-                    return
-
-        self.render_form(login_err="Invalid login.")
+        if User.valid_user(username, password):
+            self.login(username)
+        else:
+            self.render_form(login_err="Invalid login.")
 
 
 class Logout(Handler):
