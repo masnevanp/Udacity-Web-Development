@@ -88,6 +88,12 @@ class FrontPage(Handler):
         self.render("front.html", blogposts=blogposts)
 
 
+class FrontPageJson(Handler):
+    def get(self):
+        self.response.headers['content-type'] = "application/json; charset=UTF-8"
+        self.write('{"json": "coming soon..."}')
+
+
 class NewPost(Handler):
     def render_form(self, subject="", content="", error=""):
         self.render("newpost.html", subject=subject, content=content, error=error)
@@ -114,6 +120,11 @@ class PermaLink(Handler):
             self.render("perma.html", blogpost=blogpost)
         else:
             self.render("perma_404.html")
+
+class PermaLinkJson(Handler):
+    def get(self, link_id):
+        self.response.headers['content-type'] = "application/json; charset=UTF-8"
+        self.write('{"json": "for %s coming soon..."}' % link_id)
 
 
 class SignUp(Handler):
