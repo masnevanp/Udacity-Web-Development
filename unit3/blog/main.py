@@ -147,6 +147,7 @@ class PermaLink(Handler):
         if blogpost:
             self.render("perma.html", blogpost=blogpost)
         else:
+            self.response.set_status(404)
             self.render("perma_404.html")
 
 
