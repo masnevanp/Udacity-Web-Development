@@ -44,6 +44,19 @@ class BlogPost(db.Model):
     def render(self):
         t = jinja_env.get_template('blogpost.html')
         return t.render(blogpost=self)
+    
+    @staticmethod
+    def store_post(subject, content):
+        return BlogPost(subject=subject, content=content).put().id()
+
+    @staticmethod
+    def get_post(id):
+        return BlogPost.get_by_id(int(id))
+    
+    @staticmethod
+    def get_latest(limit=10):
+        return db.GqlQuery(
+            "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % limit)
 
 
 class Handler(webapp2.RequestHandler):
@@ -83,8 +96,7 @@ class Handler(webapp2.RequestHandler):
 
 class FrontPage(Handler):
     def get(self):
-        blogposts = db.GqlQuery(
-            "SELECT * FROM BlogPost ORDER BY created DESC LIMIT 10")
+        blogposts = BlogPost.get_latest()
         self.render("front.html", blogposts=blogposts)
 
 
@@ -106,7 +118,7 @@ class NewPost(Handler):
         cont = self.request.get("content")
 
         if subj and cont:
-            post_id = BlogPost(subject=subj, content=cont).put().id()
+            post_id = BlogPost.store_post(subj, cont)
             self.redirect("/unit3/blog/" + str(post_id))
         else:
             err = "subject and content, please!"
@@ -114,8 +126,8 @@ class NewPost(Handler):
 
 
 class PermaLink(Handler):
-    def get(self, link_id):
-        blogpost = BlogPost.get_by_id(int(link_id))
+    def get(self, id):
+        blogpost = BlogPost.get_post(id)
         if blogpost:
             self.render("perma.html", blogpost=blogpost)
         else:
