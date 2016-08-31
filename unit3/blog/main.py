@@ -66,8 +66,8 @@ class BlogPost(db.Model):
     
     @staticmethod
     def get_latest(limit=10):
-        return db.GqlQuery(
-            "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % limit)
+        return list(db.GqlQuery(
+            "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % limit))
 
     @staticmethod
     def get_latest_json(limit=10):
