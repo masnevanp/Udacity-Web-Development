@@ -47,14 +47,12 @@ class BlogPost(db.Model):
         t = jinja_env.get_template('blogpost.html')
         return t.render(blogpost=self)
     
-    def to_json(self):
-        blogpost = OrderedDict([
+    def to_dict(self):
+        return OrderedDict([
             ("subject", self.subject),
             ("content", self.content),
             ("created", self.created.strftime("%a %b %d %X %Y"))
         ])
-
-        return json.dumps(blogpost)
     
     @staticmethod
     def store_post(subject, content):
@@ -68,11 +66,6 @@ class BlogPost(db.Model):
     def get_latest(limit=10):
         return list(db.GqlQuery(
             "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % limit))
-
-    @staticmethod
-    def get_latest_json(limit=10):
-        blogposts = BlogPost.get_latest(limit)
-        return '[' + ",".join([bp.to_json() for bp in blogposts]) + ']'
 
 
 class Handler(webapp2.RequestHandler):
@@ -118,8 +111,9 @@ class FrontPage(Handler):
 
 class FrontPageJson(Handler):
     def get(self):
+        json_txt = json.dumps([bp.to_dict() for bp in BlogPost.get_latest()])
         self.response.headers['content-type'] = "application/json; charset=UTF-8"
-        self.write(BlogPost.get_latest_json())
+        self.write(json_txt)
 
 
 class NewPost(Handler):
@@ -155,8 +149,9 @@ class PermaLinkJson(Handler):
     def get(self, id):
         blogpost = BlogPost.get_post(id)
         if blogpost:
+            json_txt = json.dumps(blogpost.to_dict())
             self.response.headers['content-type'] = "application/json; charset=UTF-8"
-            self.write(blogpost.to_json())
+            self.write(json_txt)
         else:
             self.response.set_status(404)
             self.write(json.dumps({"error": "unknown id"}))
