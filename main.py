@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import webapp2
 import unit1.main
 import unit2.rot13.main
@@ -7,6 +8,8 @@ import unit2.signup.main
 import unit2a.main
 import unit3.asciichan.main
 import unit3.blog.main
+
+DEBUG = os.environ['SERVER_SOFTWARE'].startswith('Development')
 
 app = webapp2.WSGIApplication([
             ('/unit1', unit1.main.MainHandler),
@@ -26,4 +29,4 @@ app = webapp2.WSGIApplication([
             ('/unit3/blog/logout', unit3.blog.main.Logout),
             ('/unit3/blog/welcome', unit3.blog.main.Welcome)
         ],
-        debug=True)
+        debug=DEBUG)
