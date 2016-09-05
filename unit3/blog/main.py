@@ -62,7 +62,7 @@ class BlogPost(db.Model):
     @staticmethod
     def store_post(subject, content):
         post_id = BlogPost(subject=subject, content=content).put().id()
-        get_latest(update=True)
+        BlogPost.get_latest(update=True)
         return post_id
 
     @staticmethod
