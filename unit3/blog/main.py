@@ -131,7 +131,8 @@ class Handler(webapp2.RequestHandler):
 class FrontPage(Handler):
     def get(self):
         (posts, qry_time) = BlogPost.get_latest()
-        self.render("front.html", blogposts=posts)
+        query_age = int(round(time.time() - qry_time));
+        self.render("front.html", blogposts=posts, query_age=query_age)
 
 
 class FrontPageJson(Handler):

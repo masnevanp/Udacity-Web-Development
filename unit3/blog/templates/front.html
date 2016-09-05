@@ -4,4 +4,5 @@
   {% for bp in blogposts %}
     {{ bp.render() | safe }}
   {% endfor %}
-{% endblock %}  
+  <p class="w3-right">Queried {{query_age}} seconds ago</p>
+{% endblock %}
