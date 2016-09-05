@@ -6,6 +6,7 @@ import time
 import webapp2
 import jinja2
 
+from google.appengine.api import memcache
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -31,11 +32,23 @@ class Art(db.Model):
     art = db.TextProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
 
+    @staticmethod
+    def top_arts(update=False):
+        key = 'top_arts'
+        arts = memcache.get(key)
+        if arts is None or update:
+            arts = db.GqlQuery(
+                "SELECT * FROM Art ORDER BY created DESC")
+            arts = list(arts)
+            memcache.set(key, arts)
+        
+        return arts
+
+
 
 class MainPage(Handler):
     def render_front(self, title="", art="", error=""):
-        arts = db.GqlQuery(
-                "SELECT * FROM Art ORDER BY created DESC")
+        arts = Art.top_arts()
         self.render("front.html", title=title, art=art, error=error, arts=arts)
 
     def get(self):
@@ -52,6 +65,7 @@ class MainPage(Handler):
             # Without the delay the newly added art will not show up when
             # we redirect below. There must be a better way, but this
             # will do for now...
+            Art.top_arts(True)
             self.redirect("/unit3/asciichan")
         else:
             error = "We need both the title and the art!"
