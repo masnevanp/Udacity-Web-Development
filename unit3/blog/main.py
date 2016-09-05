@@ -4,11 +4,14 @@ import os
 
 import webapp2
 import jinja2
+from google.appengine.api import memcache
 from google.appengine.ext import db
 
 from collections import defaultdict
 from collections import OrderedDict
 import json
+import time
+import logging
 
 import utils
 
@@ -58,16 +61,36 @@ class BlogPost(db.Model):
     
     @staticmethod
     def store_post(subject, content):
-        return BlogPost(subject=subject, content=content).put().id()
+        post_id = BlogPost(subject=subject, content=content).put().id()
+        get_latest(update=True)
+        return post_id
 
     @staticmethod
     def get_post(id):
         return BlogPost.get_by_id(int(id))
     
     @staticmethod
-    def get_latest(limit=10):
-        return list(db.GqlQuery(
-            "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % limit))
+    def get_latest(update=False, count=10):
+        key = 'latest_posts'
+
+        if not update:
+            val = memcache.get(key)
+            if val:
+                (posts, cached_count, qry_time) = val
+                if cached_count != count:
+                    # ISSUE: Unnecessary update when cached_count > count
+                    update = True
+            else:
+                update = True
+        
+        if update:
+            posts = db.GqlQuery(
+                "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % count)
+            posts = list(posts)
+            qry_time = time.time();
+            memcache.set(key, (posts, count, qry_time))
+        
+        return (posts, qry_time)
 
 
 class Handler(webapp2.RequestHandler):
@@ -107,13 +130,14 @@ class Handler(webapp2.RequestHandler):
 
 class FrontPage(Handler):
     def get(self):
-        blogposts = BlogPost.get_latest()
-        self.render("front.html", blogposts=blogposts)
+        (posts, qry_time) = BlogPost.get_latest()
+        self.render("front.html", blogposts=posts)
 
 
 class FrontPageJson(Handler):
     def get(self):
-        json_txt = json.dumps([bp.to_dict() for bp in BlogPost.get_latest()])
+        (posts, _) = BlogPost.get_latest();
+        json_txt = json.dumps([bp.to_dict() for bp in posts])
         self.response.headers['content-type'] = "application/json; charset=UTF-8"
         self.write(json_txt)
 
