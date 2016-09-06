@@ -22,6 +22,10 @@ jinja_env = jinja2.Environment(
                 autoescape=True)
 
 
+def users_key(users_name='default_users'):
+    return ndb.Key('Users', users_name)
+
+
 class User(ndb.Model):
     name = ndb.StringProperty(required=True)
     hash = ndb.StringProperty(required=True)
@@ -29,16 +33,17 @@ class User(ndb.Model):
     
     @staticmethod
     def add_user(name, hash, email=""):
-        User(name=name, hash=hash, email=email).put()
+        User(parent=users_key(), name=name, hash=hash, email=email).put()
     
     @staticmethod
     def user_exists(username):
-        return User.query(User.name == username).get() != None
+        q = User.query(User.name == username, ancestor=users_key())
+        return q.get() != None
     
     @staticmethod
     def valid_user(username, password):
         if username and password:
-            user = User.query(User.name == username).get()
+            user = User.query(User.name == username, ancestor=users_key()).get()
             return user and utils.valid_pw(username, password, user.hash)
 
 
