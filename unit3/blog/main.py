@@ -5,7 +5,7 @@ import os
 import webapp2
 import jinja2
 from google.appengine.api import memcache
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from collections import defaultdict
 from collections import OrderedDict
@@ -22,31 +22,30 @@ jinja_env = jinja2.Environment(
                 autoescape=True)
 
 
-class User(db.Model):
-    name = db.StringProperty(required=True)
-    hash = db.StringProperty(required=True)
-    email = db.StringProperty(required=False)
+class User(ndb.Model):
+    name = ndb.StringProperty(required=True)
+    hash = ndb.StringProperty(required=True)
+    email = ndb.StringProperty(required=False)
     
     @staticmethod
     def add_user(name, hash, email=""):
-        # TODO(?): catch & handle the TransactionFailed
         User(name=name, hash=hash, email=email).put()
     
     @staticmethod
     def user_exists(username):
-        return User.all().filter('name =', username).get() != None
+        return User.query(User.name == username).get() != None
     
     @staticmethod
     def valid_user(username, password):
         if username and password:
-            user = User.all().filter('name =', username).get()
-            return utils.valid_pw(username, password, user.hash)
+            user = User.query(User.name == username).get()
+            return user and utils.valid_pw(username, password, user.hash)
 
 
-class BlogPost(db.Model):
-    subject = db.StringProperty(required=True)
-    content = db.TextProperty(required=True)
-    created = db.DateTimeProperty(auto_now_add=True)
+class BlogPost(ndb.Model):
+    subject = ndb.StringProperty(required=True)
+    content = ndb.TextProperty(required=True)
+    created = ndb.DateTimeProperty(auto_now_add=True)
 
     def render(self):
         t = jinja_env.get_template('blogpost.html')
@@ -84,9 +83,11 @@ class BlogPost(db.Model):
                 update = True
         
         if update:
-            posts = db.GqlQuery(
-                "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % count)
-            posts = list(posts)
+            #posts = db.GqlQuery(
+            #    "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % count)
+            #posts = list(posts)
+            posts = BlogPost.query().order(-BlogPost.created).fetch(count)
+            logging.error("Posts type: ", type(posts))
             qry_time = time.time();
             memcache.set(key, (posts, count, qry_time))
         
