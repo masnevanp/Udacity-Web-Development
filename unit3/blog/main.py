@@ -83,9 +83,6 @@ class BlogPost(ndb.Model):
                 update = True
         
         if update:
-            #posts = db.GqlQuery(
-            #    "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % count)
-            #posts = list(posts)
             posts = BlogPost.query().order(-BlogPost.created).fetch(count)
             qry_time = time.time()
             memcache.set(key, (posts, count, qry_time))
