@@ -142,11 +142,11 @@ class Handler(webapp2.RequestHandler):
          
     def login(self, username):
         self.set_cookie('username', username)
-        self.redirect('/unit3/blog/welcome')
+        self.redirect('/unit3/blog')
 
     def logout(self):
         self.set_cookie('username', '')
-        self.redirect('/unit3/blog/signup')
+        self.redirect('/unit3/blog')
     
 
 class FrontPage(Handler):
@@ -281,6 +281,7 @@ class Welcome(Handler):
             self.render("welcome.html", username=self.cur_user)
         else:
             self.redirect("/unit3/blog/signup")
+
 
 class FlushCache(Handler):
     def get(self):
