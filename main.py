@@ -27,6 +27,7 @@ app = webapp2.WSGIApplication([
             ('/unit3/blog/signup', unit3.blog.main.SignUp),
             ('/unit3/blog/login', unit3.blog.main.Login),
             ('/unit3/blog/logout', unit3.blog.main.Logout),
-            ('/unit3/blog/welcome', unit3.blog.main.Welcome)
+            ('/unit3/blog/welcome', unit3.blog.main.Welcome),
+            ('/unit3/blog/flush', unit3.blog.main.FlushCache)
         ],
         debug=DEBUG)

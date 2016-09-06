@@ -281,4 +281,9 @@ class Welcome(Handler):
             self.render("welcome.html", username=self.cur_user)
         else:
             self.redirect("/unit3/blog/signup")
+
+class FlushCache(Handler):
+    def get(self):
+        memcache.flush_all()
+        self.redirect("/unit3/blog")
     
