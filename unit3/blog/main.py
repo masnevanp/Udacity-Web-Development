@@ -114,17 +114,7 @@ class BlogPost(ndb.Model):
         return (posts, qry_time)
 
 
-class Handler(webapp2.RequestHandler):
-    def write(self, *a, **kw):
-        self.response.write(*a, **kw)
-
-    def render_str(self, template, **params):
-        t = jinja_env.get_template(template)
-        return t.render(params)
-
-    def render(self, template, **kw):
-        self.write(self.render_str(template, **kw))
-
+class Handler(webapp2.RequestHandler):    
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
         self.cur_user = self.get_cookie('username')
@@ -148,6 +138,14 @@ class Handler(webapp2.RequestHandler):
         self.set_cookie('username', '')
         self.redirect('/unit3/blog')
     
+    def write(self, *a, **kw):
+        self.response.write(*a, **kw)
+    
+    def render(self, template, **params):
+        t = jinja_env.get_template(template)
+        r_str = t.render(params)
+        self.write(r_str)
+
 
 class FrontPage(Handler):
     def get(self):
