@@ -75,8 +75,21 @@ class BlogPost(ndb.Model):
         return post_id
 
     @staticmethod
-    def get_post(id):
-        return BlogPost.get_by_id(int(id), parent=blog_key())
+    def get_post(post_id):
+        key = 'post' + post_id
+
+        val = memcache.get(key)
+        if val:
+            (post, qry_time) = val
+        else:
+            post = BlogPost.get_by_id(int(post_id), parent=blog_key())
+            if post:
+                qry_time = time.time()
+                memcache.set(key, (post, qry_time))
+            else:
+                return (None, None)
+        
+        return (post, qry_time)
     
     @staticmethod
     def get_latest(update=False, count=10):
@@ -172,9 +185,10 @@ class NewPost(Handler):
 
 class PermaLink(Handler):
     def get(self, id):
-        blogpost = BlogPost.get_post(id)
-        if blogpost:
-            self.render("perma.html", blogpost=blogpost)
+        (post, qry_time) = BlogPost.get_post(id)
+        if post:
+            query_age = int(round(time.time() - qry_time));
+            self.render("perma.html", blogpost=post, query_age=query_age)
         else:
             self.response.set_status(404)
             self.render("perma_404.html")
@@ -182,9 +196,9 @@ class PermaLink(Handler):
 
 class PermaLinkJson(Handler):
     def get(self, id):
-        blogpost = BlogPost.get_post(id)
-        if blogpost:
-            json_txt = json.dumps(blogpost.to_dict())
+        (post, qry_time) = BlogPost.get_post(id)
+        if post:
+            json_txt = json.dumps(post.to_dict())
             self.response.headers['content-type'] = "application/json; charset=UTF-8"
             self.write(json_txt)
         else:

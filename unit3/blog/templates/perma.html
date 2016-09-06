@@ -2,5 +2,6 @@
 
 {% block content %}
     {{ blogpost.render() | safe }}
+    <p class="w3-right">Queried {{query_age}} seconds ago</p>
 {% endblock %}  
 
