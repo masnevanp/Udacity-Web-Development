@@ -42,6 +42,10 @@ class User(ndb.Model):
             return user and utils.valid_pw(username, password, user.hash)
 
 
+def blog_key(blog_name='default_blog'):
+    return ndb.Key('Blog', blog_name)
+
+
 class BlogPost(ndb.Model):
     subject = ndb.StringProperty(required=True)
     content = ndb.TextProperty(required=True)
@@ -60,13 +64,14 @@ class BlogPost(ndb.Model):
     
     @staticmethod
     def store_post(subject, content):
-        post_id = BlogPost(subject=subject, content=content).put().id()
+        post = BlogPost(parent=blog_key(), subject=subject, content=content)
+        post_id = post.put().id()
         BlogPost.get_latest(update=True)
         return post_id
 
     @staticmethod
     def get_post(id):
-        return BlogPost.get_by_id(int(id))
+        return BlogPost.get_by_id(int(id), parent=blog_key())
     
     @staticmethod
     def get_latest(update=False, count=10):
@@ -83,7 +88,8 @@ class BlogPost(ndb.Model):
                 update = True
         
         if update:
-            posts = BlogPost.query().order(-BlogPost.created).fetch(count)
+            q = BlogPost.query(ancestor=blog_key())
+            posts = q.order(-BlogPost.created).fetch(count)
             qry_time = time.time()
             memcache.set(key, (posts, count, qry_time))
         
