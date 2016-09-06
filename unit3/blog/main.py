@@ -142,6 +142,7 @@ class Handler(webapp2.RequestHandler):
         self.response.write(*a, **kw)
     
     def render(self, template, **params):
+        params['cur_user'] = self.cur_user
         t = jinja_env.get_template(template)
         r_str = t.render(params)
         self.write(r_str)
@@ -167,9 +168,16 @@ class NewPost(Handler):
         self.render("newpost.html", subject=subject, content=content, error=error)
 
     def get(self):
-        self.render_form()
+        if self.cur_user:
+            self.render_form()
+        else:
+            self.redirect("/unit3/blog/login")
 
     def post(self):
+        if not self.cur_user:
+            self.redirect("/unit3/blog/login")
+            return
+        
         subj = self.request.get("subject")
         cont = self.request.get("content")
 
