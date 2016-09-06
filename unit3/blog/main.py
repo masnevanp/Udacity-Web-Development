@@ -87,8 +87,7 @@ class BlogPost(ndb.Model):
             #    "SELECT * FROM BlogPost ORDER BY created DESC LIMIT %d" % count)
             #posts = list(posts)
             posts = BlogPost.query().order(-BlogPost.created).fetch(count)
-            logging.error("Posts type: ", type(posts))
-            qry_time = time.time();
+            qry_time = time.time()
             memcache.set(key, (posts, count, qry_time))
         
         return (posts, qry_time)
