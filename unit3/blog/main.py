@@ -54,6 +54,7 @@ def blog_key(blog_name='default_blog'):
 class BlogPost(ndb.Model):
     subject = ndb.StringProperty(required=True)
     content = ndb.TextProperty(required=True)
+    author = ndb.StringProperty(required=True) 
     created = ndb.DateTimeProperty(auto_now_add=True)
 
     def render(self):
@@ -64,12 +65,13 @@ class BlogPost(ndb.Model):
         return OrderedDict([
             ("subject", self.subject),
             ("content", self.content),
+            ("author", self.author),
             ("created", self.created.strftime("%a %b %d %X %Y"))
         ])
     
     @staticmethod
-    def store_post(subject, content):
-        post = BlogPost(parent=blog_key(), subject=subject, content=content)
+    def store_post(subject, content, author):
+        post = BlogPost(parent=blog_key(), subject=subject, content=content, author=author)
         post_id = post.put().id()
         BlogPost.get_latest(update=True)
         return post_id
@@ -180,9 +182,10 @@ class NewPost(Handler):
         
         subj = self.request.get("subject")
         cont = self.request.get("content")
+        auth = self.cur_user
 
         if subj and cont:
-            post_id = BlogPost.store_post(subj, cont)
+            post_id = BlogPost.store_post(subj, cont, auth)
             self.redirect("/unit3/blog/" + str(post_id))
         else:
             err = "subject and content, please!"

@@ -3,7 +3,11 @@
     <h3><b>
     <a href="/unit3/blog/{{blogpost.key.id()}}">{{blogpost.subject | safe}}</a>
     </b></h3>
-    <h5><span class="w3-opacity">{{blogpost.created.strftime("%b %d, %Y")}}</span></h5>
+    <h5>
+      <span class="w3-opacity">
+        {{blogpost.created.strftime("%b %d, %Y")}} By {{blogpost.author}}
+        </span>
+    </h5>
   </div>
   
   <div class="w3-container">
